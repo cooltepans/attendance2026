@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Add Student</title>
+
+<style>
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Arial;
+    background: linear-gradient(135deg, #007BFF, #00c6ff);
+  }
+
+  .container {
+    max-width: 500px;
+    margin: 50px auto;
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  }
+
+  h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  label {
+    font-size: 14px;
+    font-weight: bold;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 8px;
+    margin: 8px 0 15px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }
+
+  button {
+    width: 100%;
+    padding: 10px;
+    background: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: #0056b3;
+  }
+
+  .back {
+    text-align: center;
+    margin-top: 10px;
+  }
+
+  .success {
+    color: green;
+    text-align: center;
+    margin-top: 10px;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>➕ Add Student</h2>
+
+<form id="studentForm">
+
+  <!-- ✅ CLASS DROPDOWN -->
+  <label>Class</label>
+  <select id="class" required>
+    <option value="">Loading...</option>
+  </select>
+
+  <!-- ✅ SECTION DROPDOWN -->
+  <label>Section</label>
+  <select id="section" required>
+    <option value="">Select Class First</option>
+  </select>
+
+  <!-- ✅ LRN -->
+  <label>LRN</label>
+  <input type="number" id="lrn" required>
+
+  <!-- ✅ NAME -->
+  <label>Student Name</label>
+  <input type="text" id="name" required>
+
+  <!-- ✅ GENDER -->
+  <label>Gender</label>
+  <select id="gender" required>
+    <option value="">Select</option>
+    <option>Male</option>
+    <option>Female</option>
+  </select>
+
+  <!-- ✅ ADVISER -->
+  <label>Adviser</label>
+  <input type="text" id="adviser" required>
+
+  <button type="submit">💾 Save Student</button>
+
+</form>
+
+<div class="success" id="msg"></div>
+
+<div class="back">
+  <a href="index.html">⬅ Back to Menu</a>
+</div>
+
+</div>
+
+<script>
+
+// ✅ ARRAYS
+let classes = [];
+let sections = [];
+
+// ✅ LOAD CLASSES FROM GOOGLE SHEETS
+fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vSTkaem468jROXCpu4pfmlzfsRY5tpznOAmP-00X1ObYMNxcP6nWGrGUNFjK-OAZwuRlet72oVMWjZB/pub?output=csv")
+/*
+Example:
+https://docs.google.com/spreadsheets/d/XXXXX/pub?output=csv
+*/
+.then(res => res.text())
+.then(data => {
+  let rows = data.split("\n").slice(1);
+  let classSelect = document.getElementById("class");
+
+  classSelect.innerHTML = '<option value="">Select Class</option>';
+
+  rows.forEach(row => {
+    let c = row.trim();
+    if (c) {
+      classes.push(c);
+
+      let opt = document.createElement("option");
+      opt.value = c;
+      opt.textContent = c;
+      classSelect.appendChild(opt);
+    }
+  });
+});
+
+
+// ✅ LOAD SECTIONS FROM GOOGLE SHEETS
+fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vSTkaem468jROXCpu4pfmlzfsRY5tpznOAmP-00X1ObYMNxcP6nWGrGUNFjK-OAZwuRlet72oVMWjZB/pub?output=csv")
+/*
+Example:
+https://docs.google.com/spreadsheets/d/YYYY/pub?output=csv
+*/
+.then(res => res.text())
+.then(data => {
+  let rows = data.split("\n").slice(1);
+
+  rows.forEach(row => {
+    let cols = row.split(",");
+    if (cols.length >= 2) {
+      sections.push({
+        class: cols[0].trim(),
+        section: cols[1].trim()
+      });
+    }
+  });
+});
+
+
+// ✅ FILTER SECTION BASED ON CLASS
+document.getElementById("class").addEventListener("change", function() {
+
+  let selectedClass = this.value;
+  let sectionSelect = document.getElementById("section");
+
+  sectionSelect.innerHTML = '<option value="">Select Section</option>';
+
+  sections.forEach(s => {
+    if (s.class === selectedClass) {
+      let opt = document.createElement("option");
+      opt.value = s.section;
+      opt.textContent = s.section;
+      sectionSelect.appendChild(opt);
+    }
+  });
+
+});
+
+
+// ✅ SAVE STUDENT (LOCAL FOR NOW)
+let students = JSON.parse(localStorage.getItem("students")) || [];
+
+document.getElementById("studentForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  let student = {
+    class: document.getElementById("class").value,
+    section: document.getElementById("section").value,
+    lrn: document.getElementById("lrn").value,
+    name: document.getElementById("name").value,
+    gender: document.getElementById("gender").value,
+    adviser: document.getElementById("adviser").value
+  };
+
+  students.push(student);
+  localStorage.setItem("students", JSON.stringify(students));
+
+  document.getElementById("studentForm").reset();
+  document.getElementById("msg").innerText = "✅ Student Added Successfully!";
+});
+
+</script>
+
+</body>
+</html>

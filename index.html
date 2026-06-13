@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Attendance System</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(135deg, #007BFF, #00c6ff);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      width: 400px;
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      text-align: center;
+    }
+
+    .title {
+      font-size: 26px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 25px;
+    }
+
+    .card {
+      background: #f4f6f9;
+      padding: 20px;
+      margin: 15px 0;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: 0.3s;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .card:hover {
+      background: #007BFF;
+      color: white;
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+
+    .icon {
+      font-size: 28px;
+    }
+
+    .text {
+      flex: 1;
+    }
+
+    .text h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .text p {
+      margin: 3px 0 0;
+      font-size: 13px;
+      color: #555;
+    }
+
+    .card:hover p {
+      color: #e0e0e0;
+    }
+
+    footer {
+      margin-top: 20px;
+      font-size: 12px;
+      color: #888;
+    }
+
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="title">📋 Attendance System</div>
+
+  <!-- ADD STUDENT -->
+  <div class="card" onclick="goTo('add.html')">
+    <div class="icon">➕</div>
+    <div class="text">
+      <h3>Add Student</h3>
+      <p>Register new student information</p>
+    </div>
+  </div>
+
+  <!-- ATTENDANCE -->
+  <div class="card" onclick="goTo('attendance.html')">
+    <div class="icon">📊</div>
+    <div class="text">
+      <h3>Attendance</h3>
+      <p>Record daily attendance</p>
+    </div>
+  </div>
+
+  <!-- SEARCH -->
+  <div class="card" onclick="goTo('search.html')">
+    <div class="icon">🔍</div>
+    <div class="text">
+      <h3>Search Student</h3>
+      <p>Find student records</p>
+    </div>
+  </div>
+
+  <footer>
+    Attendance Management System v1.0
+  </footer>
+
+</div>
+
+<script>
+  function goTo(page) {
+    window.location.href = page;
+  }
+</script>
+
+</body>
+</html>
