@@ -5,7 +5,6 @@
 <title>Add Student</title>
 
 <style>
-
 body {
   margin: 0;
   font-family: "Segoe UI", Arial;
@@ -46,7 +45,6 @@ button {
   color: white;
   border: none;
   border-radius: 8px;
-  font-size: 16px;
   cursor: pointer;
   transition: 0.3s;
 }
@@ -66,10 +64,6 @@ button:hover {
 
 .msg.show {
   opacity: 1;
-}
-
-.error {
-  color: red;
 }
 
 </style>
@@ -119,57 +113,80 @@ button:hover {
 
 <script>
 
+// ============================
 // ✅ STORAGE
+// ============================
 let sections = [];
 
 
-// ✅ LOAD CLASS (FIXED LINK ✅)
-fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vSTkaem468jROXCpu4pfmlzfsRY5tpznOAmP-00X1ObYMNxcP6nWGrGUNFjK-OAZwuRlet72oVMWjZB/pub?gid=1776947729&single=true&output=csv")
-.then(res => res.text())
-.then(data => {
+// ============================
+// ✅ LOAD SECTIONS FIRST (FIX ✅)
+// ============================
+function loadSections() {
 
-  let rows = data.split("\n").slice(1);
-  let classSelect = document.getElementById("class");
+  fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vSTkaem468jROXCpu4pfmlzfsRY5tpznOAmP-00X1ObYMNxcP6nWGrGUNFjK-OAZwuRlet72oVMWjZB/pub?gid=1804340378&single=true&output=csv")
+  .then(res => res.text())
+  .then(data => {
 
-  classSelect.innerHTML = '<option>Select Class</option>';
+    let rows = data.split("\n").slice(1);
 
-  rows.forEach(row => {
-    let c = row.replace("\r","").trim();
-    if (c) {
-      classSelect.innerHTML += `<option value="${c}">${c}</option>`;
-    }
-  });
+    sections = [];
 
-})
-.catch(err => console.error("❌ Class Load Error:", err));
+    rows.forEach(row => {
+      let cols = row.split(",");
 
+      if (cols.length >= 3) {
+        sections.push({
+          class: cols[0].trim(),
+          section: cols[1].trim(),
+          adviser: cols[2].trim()
+        });
+      }
+    });
 
-// ✅ LOAD SECTIONS
-fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vSTkaem468jROXCpu4pfmlzfsRY5tpznOAmP-00X1ObYMNxcP6nWGrGUNFjK-OAZwuRlet72oVMWjZB/pub?gid=1804340378&single=true&output=csv")
-.then(res => res.text())
-.then(data => {
+    console.log("✅ Sections Loaded");
 
-  let rows = data.split("\n").slice(1);
+    loadClasses(); // ✅ LOAD CLASS AFTER
 
-  sections = [];
+  })
+  .catch(err => console.error("❌ Section load error:", err));
 
-  rows.forEach(row => {
-    let cols = row.split(",");
-
-    if (cols.length >= 3) {
-      sections.push({
-        class: cols[0].trim(),
-        section: cols[1].trim(),
-        adviser: cols[2].trim()
-      });
-    }
-  });
-
-})
-.catch(err => console.error("❌ Section Load Error:", err));
+}
 
 
-// ✅ CLASS CHANGE → FILTER SECTION
+// ============================
+// ✅ LOAD CLASSES (FIX ✅)
+// ============================
+function loadClasses() {
+
+  fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vSTkaem468jROXCpu4pfmlzfsRY5tpznOAmP-00X1ObYMNxcP6nWGrGUNFjK-OAZwuRlet72oVMWjZB/pub?gid=1776947729&single=true&output=csv")
+  .then(res => res.text())
+  .then(data => {
+
+    let rows = data.split("\n").slice(1);
+    let classSelect = document.getElementById("class");
+
+    classSelect.innerHTML = '<option value="">Select Class</option>';
+
+    rows.forEach(row => {
+      let c = row.replace("\r","").trim();
+
+      if (c) {
+        classSelect.innerHTML += `<option value="${c}">${c}</option>`;
+      }
+    });
+
+    console.log("✅ Classes Loaded");
+
+  })
+  .catch(err => console.error("❌ Class load error:", err));
+
+}
+
+
+// ============================
+// ✅ CLASS CHANGE → SECTION
+// ============================
 document.getElementById("class").addEventListener("change", function() {
 
   let selectedClass = this.value;
@@ -177,16 +194,22 @@ document.getElementById("class").addEventListener("change", function() {
 
   sectionDropdown.innerHTML = '<option>Select Section</option>';
 
-  sections.forEach(s => {
-    if (s.class === selectedClass) {
+  let filtered = sections.filter(s => s.class === selectedClass);
+
+  if (filtered.length === 0) {
+    sectionDropdown.innerHTML = '<option>No sections</option>';
+  } else {
+    filtered.forEach(s => {
       sectionDropdown.innerHTML += `<option value="${s.section}">${s.section}</option>`;
-    }
-  });
+    });
+  }
 
 });
 
 
-// ✅ SECTION CHANGE → ADVISER
+// ============================
+// ✅ SECTION → ADVISER
+// ============================
 document.getElementById("section").addEventListener("change", function() {
 
   let selectedClass = document.getElementById("class").value;
@@ -202,7 +225,9 @@ document.getElementById("section").addEventListener("change", function() {
 });
 
 
+// ============================
 // ✅ LIMIT LRN
+// ============================
 document.getElementById("lrn").addEventListener("input", function() {
   if (this.value.length > 12) {
     this.value = this.value.slice(0, 12);
@@ -210,7 +235,9 @@ document.getElementById("lrn").addEventListener("input", function() {
 });
 
 
-// ✅ SAVE + DUPLICATE CHECK
+// ============================
+// ✅ SAVE + PREVENT DUPLICATE
+// ============================
 document.getElementById("studentForm").addEventListener("submit", function(e) {
 
   e.preventDefault();
@@ -230,9 +257,9 @@ document.getElementById("studentForm").addEventListener("submit", function(e) {
     return;
   }
 
-  // ✅ CHECK DUPLICATE VIA SIMPLE CACHE (IMPORTANT)
+  // ✅ DUPLICATE CHECK (LOCAL)
   if (localStorage.getItem("lrn_" + lrn)) {
-    alert("❌ Student with this LRN already exists!");
+    alert("❌ This student already exists!");
     btn.innerText = "💾 Save Student";
     btn.disabled = false;
     return;
@@ -253,7 +280,6 @@ document.getElementById("studentForm").addEventListener("submit", function(e) {
   .then(res => res.text())
   .then(data => {
 
-    // ✅ mark LRN as used
     localStorage.setItem("lrn_" + lrn, true);
 
     msg.innerText = "✅ Student Saved!";
@@ -270,13 +296,17 @@ document.getElementById("studentForm").addEventListener("submit", function(e) {
 
   })
   .catch(err => {
-    console.error(err);
     alert("❌ Save failed");
+    console.error(err);
     btn.innerText = "💾 Save Student";
     btn.disabled = false;
   });
 
 });
+
+
+// ✅ START SYSTEM
+loadSections();
 
 </script>
 
