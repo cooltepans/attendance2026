@@ -4,79 +4,77 @@
 <meta charset="UTF-8">
 <title>Add Student</title>
 
+<!-- ✅ ================= CSS ================= -->
 <style>
 
-body {
-  margin: 0;
-  font-family: "Segoe UI", Arial;
-  background: linear-gradient(135deg, #007BFF, #00c6ff);
-}
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Arial;
+    background: linear-gradient(135deg, #007BFF, #00c6ff);
+  }
 
-.container {
-  max-width: 500px;
-  margin: 50px auto;
-  background: white;
-  padding: 25px;
-  border-radius: 15px;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-}
+  .container {
+    max-width: 500px;
+    margin: 50px auto;
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+  }
 
-h2 {
-  text-align: center;
-}
+  h2 {
+    text-align: center;
+  }
 
-input, select {
-  width: 100%;
-  padding: 10px;
-  margin: 8px 0 15px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  transition: 0.3s;
-}
+  input, select {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0 15px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    transition: 0.3s;
+  }
 
-input:focus, select:focus {
-  border-color: #007BFF;
-  box-shadow: 0 0 5px rgba(0,123,255,0.5);
-}
+  input:focus, select:focus {
+    border-color: #007BFF;
+    box-shadow: 0 0 5px rgba(0,123,255,0.5);
+  }
 
-button {
-  width: 100%;
-  padding: 12px;
-  background: linear-gradient(45deg, #007BFF, #00c6ff);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: 0.3s;
-}
+  button {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(45deg, #007BFF, #00c6ff);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
 
-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-}
+  button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  }
 
-.msg {
-  text-align: center;
-  margin-top: 10px;
-  font-weight: bold;
-  opacity: 0;
-  transition: 0.3s;
-}
+  .msg {
+    text-align: center;
+    margin-top: 10px;
+    font-weight: bold;
+    opacity: 0;
+    transition: 0.3s;
+  }
 
-.msg.show {
-  opacity: 1;
-}
-
-.error {
-  color: red;
-}
+  .msg.show {
+    opacity: 1;
+  }
 
 </style>
 </head>
 
 <body>
 
+<!-- ✅ ================= UI ================= -->
 <div class="container">
 
 <h2>➕ Add Student</h2>
@@ -117,59 +115,76 @@ button:hover {
 
 </div>
 
+<!-- ✅ ================= SCRIPT ================= -->
 <script>
 
-// ✅ STORAGE
+// ============================
+// ✅ GLOBAL DATA
+// ============================
 let sections = [];
 
 
-// ✅ LOAD CLASS (FIXED LINK ✅)
-fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vSTkaem468jROXCpu4pfmlzfsRY5tpznOAmP-00X1ObYMNxcP6nWGrGUNFjK-OAZwuRlet72oVMWjZB/pub?gid=1776947729&single=true&output=csv")
-.then(res => res.text())
-.then(data => {
+// ============================
+// ✅ LOAD CLASS
+// ============================
+function loadClasses() {
 
-  let rows = data.split("\n").slice(1);
-  let classSelect = document.getElementById("class");
+  fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vSTkaem468jROXCpu4pfmlzfsRY5tpznOAmP-00X1ObYMNxcP6nWGrGUNFjK-OAZwuRlet72oVMWjZB/pub?gid=1776947729&single=true&output=csv")
+  .then(res => res.text())
+  .then(data => {
 
-  classSelect.innerHTML = '<option>Select Class</option>';
+    let rows = data.split("\n").slice(1);
+    let classSelect = document.getElementById("class");
 
-  rows.forEach(row => {
-    let c = row.replace("\r","").trim();
-    if (c) {
-      classSelect.innerHTML += `<option value="${c}">${c}</option>`;
-    }
-  });
+    classSelect.innerHTML = '<option>Select Class</option>';
 
-})
-.catch(err => console.error("❌ Class Load Error:", err));
+    rows.forEach(row => {
+      let c = row.replace("\r","").trim();
+      if (c) {
+        classSelect.innerHTML += `<option value="${c}">${c}</option>`;
+      }
+    });
+
+  })
+  .catch(err => console.error("❌ Class Load Error:", err));
+
+}
 
 
+// ============================
 // ✅ LOAD SECTIONS
-fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vSTkaem468jROXCpu4pfmlzfsRY5tpznOAmP-00X1ObYMNxcP6nWGrGUNFjK-OAZwuRlet72oVMWjZB/pub?gid=1804340378&single=true&output=csv")
-.then(res => res.text())
-.then(data => {
+// ============================
+function loadSections() {
 
-  let rows = data.split("\n").slice(1);
+  fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vSTkaem468jROXCpu4pfmlzfsRY5tpznOAmP-00X1ObYMNxcP6nWGrGUNFjK-OAZwuRlet72oVMWjZB/pub?gid=1804340378&single=true&output=csv")
+  .then(res => res.text())
+  .then(data => {
 
-  sections = [];
+    let rows = data.split("\n").slice(1);
 
-  rows.forEach(row => {
-    let cols = row.split(",");
+    sections = [];
 
-    if (cols.length >= 3) {
-      sections.push({
-        class: cols[0].trim(),
-        section: cols[1].trim(),
-        adviser: cols[2].trim()
-      });
-    }
-  });
+    rows.forEach(row => {
+      let cols = row.split(",");
 
-})
-.catch(err => console.error("❌ Section Load Error:", err));
+      if (cols.length >= 3) {
+        sections.push({
+          class: cols[0].trim(),
+          section: cols[1].trim(),
+          adviser: cols[2].trim()
+        });
+      }
+    });
+
+  })
+  .catch(err => console.error("❌ Section Load Error:", err));
+
+}
 
 
-// ✅ CLASS CHANGE → FILTER SECTION
+// ============================
+// ✅ CLASS CHANGE
+// ============================
 document.getElementById("class").addEventListener("change", function() {
 
   let selectedClass = this.value;
@@ -186,7 +201,9 @@ document.getElementById("class").addEventListener("change", function() {
 });
 
 
+// ============================
 // ✅ SECTION CHANGE → ADVISER
+// ============================
 document.getElementById("section").addEventListener("change", function() {
 
   let selectedClass = document.getElementById("class").value;
@@ -202,7 +219,9 @@ document.getElementById("section").addEventListener("change", function() {
 });
 
 
-// ✅ LIMIT LRN
+// ============================
+// ✅ LIMIT LRN (12 DIGITS)
+// ============================
 document.getElementById("lrn").addEventListener("input", function() {
   if (this.value.length > 12) {
     this.value = this.value.slice(0, 12);
@@ -210,14 +229,14 @@ document.getElementById("lrn").addEventListener("input", function() {
 });
 
 
-// ✅ SAVE + DUPLICATE CHECK
+// ============================
+// ✅ SAVE FUNCTION
+// ============================
 document.getElementById("studentForm").addEventListener("submit", function(e) {
 
   e.preventDefault();
 
   let btn = document.getElementById("saveBtn");
-  let msg = document.getElementById("msg");
-
   btn.innerText = "Saving...";
   btn.disabled = true;
 
@@ -225,14 +244,6 @@ document.getElementById("studentForm").addEventListener("submit", function(e) {
 
   if (lrn.length !== 12) {
     alert("❌ LRN must be 12 digits");
-    btn.innerText = "💾 Save Student";
-    btn.disabled = false;
-    return;
-  }
-
-  // ✅ CHECK DUPLICATE VIA SIMPLE CACHE (IMPORTANT)
-  if (localStorage.getItem("lrn_" + lrn)) {
-    alert("❌ Student with this LRN already exists!");
     btn.innerText = "💾 Save Student";
     btn.disabled = false;
     return;
@@ -253,30 +264,32 @@ document.getElementById("studentForm").addEventListener("submit", function(e) {
   .then(res => res.text())
   .then(data => {
 
-    // ✅ mark LRN as used
-    localStorage.setItem("lrn_" + lrn, true);
-
+    // ✅ Show message
+    let msg = document.getElementById("msg");
     msg.innerText = "✅ Student Saved!";
     msg.classList.add("show");
 
+    // ✅ RESET FORM
     document.getElementById("studentForm").reset();
     document.getElementById("section").innerHTML = '<option>Select Class First</option>';
     document.getElementById("adviser").value = "";
 
+    // ✅ RESET BUTTON
     btn.innerText = "💾 Save Student";
     btn.disabled = false;
 
     setTimeout(() => msg.classList.remove("show"), 3000);
 
-  })
-  .catch(err => {
-    console.error(err);
-    alert("❌ Save failed");
-    btn.innerText = "💾 Save Student";
-    btn.disabled = false;
   });
 
 });
+
+
+// ============================
+// ✅ INIT LOAD
+// ============================
+loadClasses();
+loadSections();
 
 </script>
 
