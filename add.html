@@ -4,214 +4,167 @@
 <meta charset="UTF-8">
 <title>Add Student</title>
 
-<!-- ✅ ================= CSS ================= -->
 <style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: linear-gradient(135deg, #007BFF, #00c6ff);
+}
 
-  body {
-    margin: 0;
-    font-family: "Segoe UI", Arial;
-    background: linear-gradient(135deg, #007BFF, #00c6ff);
-  }
+.container {
+  max-width: 500px;
+  margin: 50px auto;
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+}
 
-  .container {
-    max-width: 500px;
-    margin: 50px auto;
-    background: white;
-    padding: 25px;
-    border-radius: 15px;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-  }
+select, input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+}
 
-  h2 {
-    text-align: center;
-  }
+button {
+  width: 100%;
+  padding: 10px;
+  background: #007BFF;
+  color: white;
+  border: none;
+}
 
-  input, select {
-    width: 100%;
-    padding: 10px;
-    margin: 8px 0 15px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    transition: 0.3s;
-  }
-
-  input:focus, select:focus {
-    border-color: #007BFF;
-    box-shadow: 0 0 5px rgba(0,123,255,0.5);
-  }
-
-  button {
-    width: 100%;
-    padding: 12px;
-    background: linear-gradient(45deg, #007BFF, #00c6ff);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: 0.3s;
-  }
-
-  button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-  }
-
-  .msg {
-    text-align: center;
-    margin-top: 10px;
-    font-weight: bold;
-    opacity: 0;
-    transition: 0.3s;
-  }
-
-  .msg.show {
-    opacity: 1;
-  }
-
+button:hover {
+  background: #0056b3;
+}
 </style>
 </head>
 
 <body>
 
-<!-- ✅ ================= UI ================= -->
 <div class="container">
 
-<h2>➕ Add Student</h2>
+<h2>Add Student</h2>
 
-<form id="studentForm">
-
-<label>Class</label>
-<select id="class" required>
-  <option>Loading...</option>
+<select id="class">
+  <option>Loading classes...</option>
 </select>
 
-<label>Section</label>
-<select id="section" required>
-  <option>Select Class First</option>
+<select id="section">
+  <option>Select class first</option>
 </select>
 
-<label>Adviser</label>
-<input type="text" id="adviser" readonly>
+<input type="text" id="adviser" placeholder="Adviser" readonly>
 
-<label>LRN</label>
-<input type="number" id="lrn" required>
+<input type="number" id="lrn" placeholder="LRN">
+<input type="text" id="name" placeholder="Name">
 
-<label>Student Name</label>
-<input type="text" id="name" required>
-
-<label>Gender</label>
-<select id="gender" required>
-  <option value="">Select</option>
+<select id="gender">
+  <option value="">Gender</option>
   <option>Male</option>
   <option>Female</option>
 </select>
 
-<button type="submit" id="saveBtn">💾 Save Student</button>
+<button onclick="save()">Save</button>
 
-</form>
-
-<div class="msg" id="msg"></div>
+<p id="msg"></p>
 
 </div>
 
-<!-- ✅ ================= SCRIPT ================= -->
 <script>
 
-// ============================
-// ✅ GLOBAL DATA
-// ============================
+// ✅ STORAGE
 let sections = [];
 
 
-// ============================
-// ✅ LOAD CLASS
-// ============================
+// ✅ STEP 1: LOAD SECTIONS FIRST
+fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vSTkaem468jROXCpu4pfmlzfsRY5tpznOAmP-00X1ObYMNxcP6nWGrGUNFjK-OAZwuRlet72oVMWjZB/pub?gid=1804340378&single=true&output=csv")
+.then(res => res.text())
+.then(data => {
+
+  console.log("SECTION DATA:", data);
+
+  let rows = data.split("\n").slice(1);
+
+  rows.forEach(row => {
+    let cols = row.split(",");
+    if (cols.length >= 3) {
+      sections.push({
+        class: cols[0].trim(),
+        section: cols[1].trim(),
+        adviser: cols[2].trim()
+      });
+    }
+  });
+
+  loadClasses(); // ✅ AFTER sections, load classes
+
+});
+
+
+// ✅ STEP 2: LOAD CLASSES
 function loadClasses() {
 
-  fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vSTkaem468jROXCpu4pfmlzfsRY5tpznOAmP-00X1ObYMNxcP6nWGrGUNFjK-OAZwuRlet72oVMWjZB/pub?gid=1776947729&single=true&output=csv")
-  .then(res => res.text())
-  .then(data => {
+fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vSTkaem468jROXCpu4pfmlzfsRY5tpznOAmP-00X1ObYMNxcP6nWGrGUNFjK-OAZwuRlet72oVMWjZB/pub?gid=1776947729&single=true&output=csv")
+.then(res => res.text())
+.then(data => {
 
-    let rows = data.split("\n").slice(1);
-    let classSelect = document.getElementById("class");
+  console.log("CLASS DATA:", data);
 
-    classSelect.innerHTML = '<option>Select Class</option>';
+  let rows = data.split("\n").slice(1);
+  let select = document.getElementById("class");
 
-    rows.forEach(row => {
-      let c = row.replace("\r","").trim();
-      if (c) {
-        classSelect.innerHTML += `<option value="${c}">${c}</option>`;
-      }
-    });
+  select.innerHTML = '<option>Select Class</option>';
 
-  })
-  .catch(err => console.error("❌ Class Load Error:", err));
+  rows.forEach(row => {
+    let val = row.replace("\r","").trim();
 
-}
-
-
-// ============================
-// ✅ LOAD SECTIONS
-// ============================
-function loadSections() {
-
-  fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vSTkaem468jROXCpu4pfmlzfsRY5tpznOAmP-00X1ObYMNxcP6nWGrGUNFjK-OAZwuRlet72oVMWjZB/pub?gid=1804340378&single=true&output=csv")
-  .then(res => res.text())
-  .then(data => {
-
-    let rows = data.split("\n").slice(1);
-
-    sections = [];
-
-    rows.forEach(row => {
-      let cols = row.split(",");
-
-      if (cols.length >= 3) {
-        sections.push({
-          class: cols[0].trim(),
-          section: cols[1].trim(),
-          adviser: cols[2].trim()
-        });
-      }
-    });
-
-  })
-  .catch(err => console.error("❌ Section Load Error:", err));
-
-}
-
-
-// ============================
-// ✅ CLASS CHANGE
-// ============================
-document.getElementById("class").addEventListener("change", function() {
-
-  let selectedClass = this.value;
-  let sectionDropdown = document.getElementById("section");
-
-  sectionDropdown.innerHTML = '<option>Select Section</option>';
-
-  sections.forEach(s => {
-    if (s.class === selectedClass) {
-      sectionDropdown.innerHTML += `<option value="${s.section}">${s.section}</option>`;
+    if (val) {
+      let opt = document.createElement("option");
+      opt.value = val;
+      opt.textContent = val;
+      select.appendChild(opt);
     }
   });
 
 });
 
+}
 
-// ============================
-// ✅ SECTION CHANGE → ADVISER
-// ============================
-document.getElementById("section").addEventListener("change", function() {
 
-  let selectedClass = document.getElementById("class").value;
-  let selectedSection = this.value;
+// ✅ STEP 3: CLASS CHANGE
+document.getElementById("class").addEventListener("change", function(){
+
+  let selected = this.value;
+  let sectionSelect = document.getElementById("section");
+
+  sectionSelect.innerHTML = '';
+
+  let filtered = sections.filter(s => s.class === selected);
+
+  if (filtered.length === 0) {
+    sectionSelect.innerHTML = '<option>No section</option>';
+    return;
+  }
+
+  filtered.forEach(s => {
+    let opt = document.createElement("option");
+    opt.value = s.section;
+    opt.textContent = s.section;
+    sectionSelect.appendChild(opt);
+  });
+
+});
+
+
+// ✅ STEP 4: SECTION CHANGE
+document.getElementById("section").addEventListener("change", function(){
+
+  let classVal = document.getElementById("class").value;
+  let sectionVal = this.value;
 
   let found = sections.find(s =>
-    s.class === selectedClass &&
-    s.section === selectedSection
+    s.class === classVal &&
+    s.section === sectionVal
   );
 
   document.getElementById("adviser").value = found ? found.adviser : "";
@@ -219,77 +172,25 @@ document.getElementById("section").addEventListener("change", function() {
 });
 
 
-// ============================
-// ✅ LIMIT LRN (12 DIGITS)
-// ============================
-document.getElementById("lrn").addEventListener("input", function() {
-  if (this.value.length > 12) {
-    this.value = this.value.slice(0, 12);
-  }
-});
-
-
-// ============================
 // ✅ SAVE FUNCTION
-// ============================
-document.getElementById("studentForm").addEventListener("submit", function(e) {
-
-  e.preventDefault();
-
-  let btn = document.getElementById("saveBtn");
-  btn.innerText = "Saving...";
-  btn.disabled = true;
+function save(){
 
   let lrn = document.getElementById("lrn").value;
 
-  if (lrn.length !== 12) {
-    alert("❌ LRN must be 12 digits");
-    btn.innerText = "💾 Save Student";
-    btn.disabled = false;
+  if (lrn.length !== 12){
+    alert("LRN must be 12 digits");
     return;
   }
 
-  let student = {
-    class: class.value,
-    section: section.value,
-    lrn: lrn,
-    name: name.value,
-    gender: gender.value
-  };
+  if (localStorage.getItem(lrn)){
+    alert("Duplicate student!");
+    return;
+  }
 
-  fetch("https://script.google.com/macros/s/AKfycbxf41h2kdkb4DIqW4iCmqtjxr58pllfyZza_9n2zU7I0ndPyUADGa5QD_MKNTUblXg6/exec", {
-    method: "POST",
-    body: JSON.stringify(student)
-  })
-  .then(res => res.text())
-  .then(data => {
+  localStorage.setItem(lrn, "saved");
 
-    // ✅ Show message
-    let msg = document.getElementById("msg");
-    msg.innerText = "✅ Student Saved!";
-    msg.classList.add("show");
-
-    // ✅ RESET FORM
-    document.getElementById("studentForm").reset();
-    document.getElementById("section").innerHTML = '<option>Select Class First</option>';
-    document.getElementById("adviser").value = "";
-
-    // ✅ RESET BUTTON
-    btn.innerText = "💾 Save Student";
-    btn.disabled = false;
-
-    setTimeout(() => msg.classList.remove("show"), 3000);
-
-  });
-
-});
-
-
-// ============================
-// ✅ INIT LOAD
-// ============================
-loadClasses();
-loadSections();
+  document.getElementById("msg").innerText = "Saved!";
+}
 
 </script>
 
