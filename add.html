@@ -2,66 +2,57 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Add Student</title>
+<title>Attendance</title>
 
 <style>
   body {
-    margin: 0;
-    font-family: "Segoe UI", Arial;
-    background: linear-gradient(135deg, #007BFF, #00c6ff);
+    font-family: Arial;
+    background: #f4f6f9;
+    padding: 20px;
   }
 
   .container {
-    max-width: 500px;
-    margin: 50px auto;
+    max-width: 900px;
+    margin: auto;
     background: white;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
   }
 
   h2 {
     text-align: center;
-    margin-bottom: 20px;
   }
 
-  label {
-    font-size: 14px;
-    font-weight: bold;
-  }
-
-  input, select {
-    width: 100%;
+  select {
     padding: 8px;
-    margin: 8px 0 15px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
+    margin: 10px 5px;
+  }
+
+  .section-title {
+    background: #e9ecef;
+    padding: 5px;
+    font-weight: bold;
+    margin-top: 15px;
+  }
+
+  .row {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px;
+    border-bottom: 1px solid #ddd;
   }
 
   button {
     width: 100%;
     padding: 10px;
+    margin-top: 15px;
     background: #007BFF;
     color: white;
     border: none;
-    border-radius: 6px;
-    cursor: pointer;
+    border-radius: 5px;
   }
 
-  button:hover {
-    background: #0056b3;
-  }
-
-  .back {
-    text-align: center;
-    margin-top: 10px;
-  }
-
-  .success {
-    color: green;
-    text-align: center;
-    margin-top: 10px;
-  }
 </style>
 </head>
 
@@ -69,116 +60,124 @@
 
 <div class="container">
 
-<h2>➕ Add Student</h2>
+<h2>📊 Attendance</h2>
 
-<form id="studentForm">
+<!-- ✅ CLASS -->
+<select id="class">
+  <option>Loading...</option>
+</select>
 
-  <!-- ✅ CLASS DROPDOWN -->
-  <label>Class</label>
-  <select id="class" required>
-    <option value="">Loading...</option>
-  </select>
+<!-- ✅ SECTION -->
+<select id="section">
+  <option>Select Class First</option>
+</select>
 
-  <!-- ✅ SECTION DROPDOWN -->
-  <label>Section</label>
-  <select id="section" required>
-    <option value="">Select Class First</option>
-  </select>
+<!-- ✅ ADVISER -->
+<p><b>Adviser:</b> <span id="adviser"></span></p>
 
-  <!-- ✅ LRN -->
-  <label>LRN</label>
-  <input type="number" id="lrn" required>
+<!-- ✅ STUDENTS -->
+<div id="students"></div>
 
-  <!-- ✅ NAME -->
-  <label>Student Name</label>
-  <input type="text" id="name" required>
+<button onclick="saveAttendance()">💾 Save Attendance</button>
 
-  <!-- ✅ GENDER -->
-  <label>Gender</label>
-  <select id="gender" required>
-    <option value="">Select</option>
-    <option>Male</option>
-    <option>Female</option>
-  </select>
-
-  <!-- ✅ ADVISER -->
-  <label>Adviser</label>
-  <input type="text" id="adviser" readonly>
-  
-  <button type="submit">💾 Save Student</button>
-
-</form>
-
-<div class="success" id="msg"></div>
-
-<div class="back">
-  <a href="index.html">⬅ Back to Menu</a>
-</div>
+<p id="msg"></p>
 
 </div>
 
 <script>
 
-// ✅ ARRAYS
+// =======================
+// ✅ STORAGE
+// =======================
 let classes = [];
 let sections = [];
+let students = [];
 
-// ✅ LOAD CLASSES FROM GOOGLE SHEETS
+
+// =======================
+// ✅ LOAD CLASSES
+// =======================
 fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vSTkaem468jROXCpu4pfmlzfsRY5tpznOAmP-00X1ObYMNxcP6nWGrGUNFjK-OAZwuRlet72oVMWjZB/pub?gid=1776947729&single=true&output=csv")
-/*
-Example:
-https://docs.google.com/spreadsheets/d/XXXXX/pub?output=csv
-*/
 .then(res => res.text())
 .then(data => {
+
   let rows = data.split("\n").slice(1);
   let classSelect = document.getElementById("class");
 
-  classSelect.innerHTML = '<option value="">Select Class</option>';
+  classSelect.innerHTML = '<option>Select Class</option>';
 
   rows.forEach(row => {
-    let c = row.trim();
+    let c = row.replace("\r","").trim();
     if (c) {
-      classes.push(c);
-
       let opt = document.createElement("option");
       opt.value = c;
       opt.textContent = c;
       classSelect.appendChild(opt);
     }
   });
+
 });
 
 
-// ✅ LOAD SECTIONS FROM GOOGLE SHEETS
+// =======================
+// ✅ LOAD SECTIONS
+// =======================
 fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vSTkaem468jROXCpu4pfmlzfsRY5tpznOAmP-00X1ObYMNxcP6nWGrGUNFjK-OAZwuRlet72oVMWjZB/pub?gid=1804340378&single=true&output=csv")
-/*
-Example:
-https://docs.google.com/spreadsheets/d/YYYY/pub?output=csv
-*/
 .then(res => res.text())
 .then(data => {
+
   let rows = data.split("\n").slice(1);
 
   rows.forEach(row => {
     let cols = row.split(",");
-    if (cols.length >= 2) {
+
+    if (cols.length >= 3) {
       sections.push({
         class: cols[0].trim(),
-        section: cols[1].trim()
+        section: cols[1].trim(),
+        adviser: cols[2].trim()
       });
     }
   });
+
 });
 
 
-// ✅ FILTER SECTION BASED ON CLASS
+// =======================
+// ✅ LOAD STUDENTS
+// =======================
+fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vSTkaem468jROXCpu4pfmlzfsRY5tpznOAmP-00X1ObYMNxcP6nWGrGUNFjK-OAZwuRlet72oVMWjZB/pub?gid=0&single=true&output=csv")
+.then(res => res.text())
+.then(data => {
+
+  let rows = data.split("\n").slice(1);
+
+  rows.forEach(row => {
+    let cols = row.split(",");
+
+    if (cols.length >= 5) {
+      students.push({
+        class: cols[0].trim(),
+        section: cols[1].trim(),
+        lrn: cols[2].trim(),
+        name: cols[3].trim(),
+        gender: cols[4].trim()
+      });
+    }
+  });
+
+});
+
+
+// =======================
+// ✅ FILTER SECTION
+// =======================
 document.getElementById("class").addEventListener("change", function() {
 
   let selectedClass = this.value;
   let sectionSelect = document.getElementById("section");
 
-  sectionSelect.innerHTML = '<option value="">Select Section</option>';
+  sectionSelect.innerHTML = '<option>Select Section</option>';
 
   sections.forEach(s => {
     if (s.class === selectedClass) {
@@ -192,27 +191,101 @@ document.getElementById("class").addEventListener("change", function() {
 });
 
 
-// ✅ SAVE STUDENT (LOCAL FOR NOW)
-let students = JSON.parse(localStorage.getItem("students")) || [];
+// =======================
+// ✅ DISPLAY STUDENTS + ADVISER
+// =======================
+document.getElementById("section").addEventListener("change", function() {
 
-document.getElementById("studentForm").addEventListener("submit", function(e) {
-  e.preventDefault();
+  let selectedClass = document.getElementById("class").value;
+  let selectedSection = this.value;
 
-  let student = {
-    class: document.getElementById("class").value,
-    section: document.getElementById("section").value,
-    lrn: document.getElementById("lrn").value,
-    name: document.getElementById("name").value,
-    gender: document.getElementById("gender").value,
-    adviser: document.getElementById("adviser").value
-  };
+  let container = document.getElementById("students");
+  container.innerHTML = "";
 
-  students.push(student);
-  localStorage.setItem("students", JSON.stringify(students));
+  // ✅ SET ADVISER
+  let found = sections.find(s =>
+    s.class === selectedClass && s.section === selectedSection
+  );
 
-  document.getElementById("studentForm").reset();
-  document.getElementById("msg").innerText = "✅ Student Added Successfully!";
+  document.getElementById("adviser").innerText = found ? found.adviser : "";
+
+  // ✅ MALE / FEMALE
+  let maleHTML = `<div class="section-title">👨 Male</div>`;
+  let femaleHTML = `<div class="section-title">👩 Female</div>`;
+
+  let index = 0;
+
+  students.forEach(s => {
+
+    if (s.class === selectedClass && s.section === selectedSection) {
+
+      let row = `
+      <div class="row">
+        <span>${s.name}</span>
+        <span>
+          <input type="radio" name="s${index}" value="P" checked> P
+          <input type="radio" name="s${index}" value="A"> A
+          <input type="radio" name="s${index}" value="L"> L
+        </span>
+      </div>`;
+
+      if (s.gender === "Male") {
+        maleHTML += row;
+      } else {
+        femaleHTML += row;
+      }
+
+      index++;
+    }
+
+  });
+
+  container.innerHTML = maleHTML + femaleHTML;
+
 });
+
+
+// =======================
+// ✅ SAVE ATTENDANCE
+// =======================
+function saveAttendance() {
+
+  let selectedClass = document.getElementById("class").value;
+  let selectedSection = document.getElementById("section").value;
+
+  let rows = document.querySelectorAll(".row");
+
+  let records = [];
+
+  rows.forEach((row, i) => {
+
+    let name = row.children[0].innerText;
+    let selected = document.querySelector(`input[name="s${i}"]:checked`);
+
+    records.push({
+      class: selectedClass,
+      section: selectedSection,
+      name: name,
+      status: selected.value
+    });
+
+  });
+
+  // ✅ SEND TO GOOGLE SHEETS
+  fetch("https://script.google.com/macros/s/AKfycbxf41h2kdkb4DIqW4iCmqtjxr58pllfyZza_9n2zU7I0ndPyUADGa5QD_MKNTUblXg6/exec
+", {
+    method: "POST",
+    body: JSON.stringify(records)
+  })
+  .then(res => res.text())
+  .then(data => {
+    document.getElementById("msg").innerText = "✅ Attendance Saved!";
+  })
+  .catch(err => {
+    alert("❌ Error saving");
+  });
+
+}
 
 </script>
 
