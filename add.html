@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -24,10 +25,6 @@
     text-align: center;
   }
 
-  label {
-    font-weight: bold;
-  }
-
   input, select {
     width: 100%;
     padding: 8px;
@@ -46,16 +43,11 @@
     cursor: pointer;
   }
 
-  button:hover {
-    background: #0056b3;
-  }
-
   .msg {
     text-align: center;
     margin-top: 10px;
     font-weight: bold;
   }
-
 </style>
 </head>
 
@@ -79,7 +71,7 @@
     <option>Select Class First</option>
   </select>
 
-  <!-- ✅ ADVISER AUTO -->
+  <!-- ✅ ADVISER -->
   <label>Adviser</label>
   <input type="text" id="adviser" readonly>
 
@@ -108,20 +100,24 @@
 </div>
 
 <script>
-console.log("Script running...");
-// ===============================
+
+// ✅ =====================
 // ✅ STORAGE
-// ===============================
+// =====================
 let sections = [];
 
 
-// ===============================
-// ✅ LOAD CLASS LIST
-// ===============================
+// ✅ =====================
+// ✅ LOAD CLASSES (FIXED URL ✅)
+// =====================
 fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vSTkaem468jROXCpu4pfmlzfsRY5tpznOAmP-00X1ObYMNxcP6nWGrGUNFjK-OAZwuRlet72oVMWjZB/pub?gid=1776947729&single=true&output=csv")
-// 🔴 REPLACE WITH YOUR CLASS SHEET CSV LINK
-.then(res => res.text())
+.then(res => {
+  console.log("Class response:", res.status);
+  return res.text();
+})
 .then(data => {
+
+  console.log("Class raw:", data);
 
   let rows = data.split("\n").slice(1);
   let classSelect = document.getElementById("class");
@@ -130,7 +126,10 @@ fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vSTkaem468jROXCpu4pfmlzfs
 
   rows.forEach(row => {
     let c = row.replace("\r","").trim();
-    if (c !== "") {
+
+    console.log("CLASS:", c);
+
+    if (c) {
       let opt = document.createElement("option");
       opt.value = c;
       opt.textContent = c;
@@ -138,15 +137,14 @@ fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vSTkaem468jROXCpu4pfmlzfs
     }
   });
 
-});
+})
+.catch(err => console.error("❌ Class fetch error:", err));
 
 
-// ===============================
-// ✅ LOAD SECTION + ADVISER
-// ===============================
-fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vSTkaem468jROXCpu4pfmlzfsRY5tpznOAmP-00X1ObYMNxcP6nWGrGUNFjK-OAZwuRlet72oVMWjZB/pub?gid=1804340378&single=true&output=csv
-")
-// 🔴 REPLACE WITH YOUR SECTION SHEET LINK
+// ✅ =====================
+// ✅ LOAD SECTIONS (FIXED ✅)
+// =====================
+fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vSTkaem468jROXCpu4pfmlzfsRY5tpznOAmP-00X1ObYMNxcP6nWGrGUNFjK-OAZwuRlet72oVMWjZB/pub?gid=1804340378&single=true&output=csv")
 .then(res => res.text())
 .then(data => {
 
@@ -158,28 +156,29 @@ fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vSTkaem468jROXCpu4pfmlzfs
 
     if (cols.length >= 3) {
       sections.push({
-        class: cols[0].replace("\r","").trim(),
-        section: cols[1].replace("\r","").trim(),
-        adviser: cols[2].replace("\r","").trim()
+        class: cols[0].trim(),
+        section: cols[1].trim(),
+        adviser: cols[2].trim()
       });
     }
 
   });
 
-  console.log("✅ Sections Loaded:", sections);
+  console.log("✅ Sections loaded:", sections);
 
-});
+})
+.catch(err => console.error("❌ Section fetch error:", err));
 
 
-// ===============================
-// ✅ FILTER SECTION BASED ON CLASS
-// ===============================
+// ✅ =====================
+// ✅ FILTER SECTION
+// =====================
 document.getElementById("class").addEventListener("change", function() {
 
   let selectedClass = this.value;
   let sectionDropdown = document.getElementById("section");
 
-  sectionDropdown.innerHTML = '<option value="">Select Section</option>';
+  sectionDropdown.innerHTML = '<option>Select Section</option>';
 
   sections.forEach(s => {
     if (s.class === selectedClass) {
@@ -193,9 +192,9 @@ document.getElementById("class").addEventListener("change", function() {
 });
 
 
-// ===============================
-// ✅ AUTO SHOW ADVISER
-// ===============================
+// ✅ =====================
+// ✅ AUTO ADVISER
+// =====================
 document.getElementById("section").addEventListener("change", function() {
 
   let selectedClass = document.getElementById("class").value;
@@ -211,21 +210,19 @@ document.getElementById("section").addEventListener("change", function() {
 });
 
 
-// ===============================
-// ✅ LIMIT LRN TO 12 DIGITS
-// ===============================
+// ✅ =====================
+// ✅ LIMIT LRN LENGTH
+// =====================
 document.getElementById("lrn").addEventListener("input", function() {
-
   if (this.value.length > 12) {
     this.value = this.value.slice(0, 12);
   }
-
 });
 
 
-// ===============================
-// ✅ SAVE TO GOOGLE SHEETS
-// ===============================
+// ✅ =====================
+// ✅ SAVE DATA
+// =====================
 document.getElementById("studentForm").addEventListener("submit", function(e) {
 
   e.preventDefault();
@@ -255,10 +252,7 @@ document.getElementById("studentForm").addEventListener("submit", function(e) {
     document.getElementById("studentForm").reset();
     document.getElementById("adviser").value = "";
   })
-  .catch(err => {
-    alert("❌ Failed to save");
-    console.error(err);
-  });
+  .catch(err => console.error("❌ Save error:", err));
 
 });
 
@@ -266,3 +260,4 @@ document.getElementById("studentForm").addEventListener("submit", function(e) {
 
 </body>
 </html>
+
