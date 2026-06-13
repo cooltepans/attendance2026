@@ -2,55 +2,58 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Attendance</title>
+<title>Add Student</title>
 
 <style>
   body {
-    font-family: Arial;
-    background: #f4f6f9;
-    padding: 20px;
+    margin: 0;
+    font-family: "Segoe UI", Arial;
+    background: linear-gradient(135deg, #007BFF, #00c6ff);
   }
 
   .container {
-    max-width: 900px;
-    margin: auto;
+    max-width: 500px;
+    margin: 50px auto;
     background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
   }
 
   h2 {
     text-align: center;
   }
 
-  select {
-    padding: 8px;
-    margin: 10px 5px;
-  }
-
-  .section-title {
-    background: #e9ecef;
-    padding: 5px;
+  label {
     font-weight: bold;
-    margin-top: 15px;
   }
 
-  .row {
-    display: flex;
-    justify-content: space-between;
-    padding: 5px;
-    border-bottom: 1px solid #ddd;
+  input, select {
+    width: 100%;
+    padding: 8px;
+    margin: 8px 0 15px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
   }
 
   button {
     width: 100%;
     padding: 10px;
-    margin-top: 15px;
     background: #007BFF;
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: #0056b3;
+  }
+
+  .msg {
+    text-align: center;
+    margin-top: 10px;
+    font-weight: bold;
   }
 
 </style>
@@ -60,55 +63,74 @@
 
 <div class="container">
 
-<h2>📊 Attendance</h2>
+<h2>➕ Add Student</h2>
 
-<!-- ✅ CLASS -->
-<select id="class">
-  <option>Loading...</option>
-</select>
+<form id="studentForm">
 
-<!-- ✅ SECTION -->
-<select id="section">
-  <option>Select Class First</option>
-</select>
+  <!-- ✅ CLASS -->
+  <label>Class</label>
+  <select id="class" required>
+    <option>Loading...</option>
+  </select>
 
-<!-- ✅ ADVISER -->
-<p><b>Adviser:</b> <span id="adviser"></span></p>
+  <!-- ✅ SECTION -->
+  <label>Section</label>
+  <select id="section" required>
+    <option>Select Class First</option>
+  </select>
 
-<!-- ✅ STUDENTS -->
-<div id="students"></div>
+  <!-- ✅ ADVISER AUTO -->
+  <label>Adviser</label>
+  <input type="text" id="adviser" readonly>
 
-<button onclick="saveAttendance()">💾 Save Attendance</button>
+  <!-- ✅ LRN -->
+  <label>LRN</label>
+  <input type="number" id="lrn" required>
 
-<p id="msg"></p>
+  <!-- ✅ NAME -->
+  <label>Student Name</label>
+  <input type="text" id="name" required>
+
+  <!-- ✅ GENDER -->
+  <label>Gender</label>
+  <select id="gender" required>
+    <option value="">Select</option>
+    <option>Male</option>
+    <option>Female</option>
+  </select>
+
+  <button type="submit">💾 Save Student</button>
+
+</form>
+
+<div class="msg" id="msg"></div>
 
 </div>
 
 <script>
 
-// =======================
+// ===============================
 // ✅ STORAGE
-// =======================
-let classes = [];
+// ===============================
 let sections = [];
-let students = [];
 
 
-// =======================
-// ✅ LOAD CLASSES
-// =======================
-fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vSTkaem468jROXCpu4pfmlzfsRY5tpznOAmP-00X1ObYMNxcP6nWGrGUNFjK-OAZwuRlet72oVMWjZB/pub?gid=1776947729&single=true&output=csv")
+// ===============================
+// ✅ LOAD CLASS LIST
+// ===============================
+fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vSTkaem468jROXCpu4pfmlzfsRY5tpznOAmP-00X1ObYMNxcP6nWGrGUNFjK-OAZwuRlet72oVMWjZB/pub?gid=1776947729&single=true&output=csv") 
+// 🔴 REPLACE WITH YOUR CLASS SHEET CSV LINK
 .then(res => res.text())
 .then(data => {
 
   let rows = data.split("\n").slice(1);
   let classSelect = document.getElementById("class");
 
-  classSelect.innerHTML = '<option>Select Class</option>';
+  classSelect.innerHTML = '<option value="">Select Class</option>';
 
   rows.forEach(row => {
     let c = row.replace("\r","").trim();
-    if (c) {
+    if (c !== "") {
       let opt = document.createElement("option");
       opt.value = c;
       opt.textContent = c;
@@ -119,173 +141,126 @@ fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vSTkaem468jROXCpu4pfmlzfs
 });
 
 
-// =======================
-// ✅ LOAD SECTIONS
-// =======================
-fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vSTkaem468jROXCpu4pfmlzfsRY5tpznOAmP-00X1ObYMNxcP6nWGrGUNFjK-OAZwuRlet72oVMWjZB/pub?gid=1804340378&single=true&output=csv")
+// ===============================
+// ✅ LOAD SECTION + ADVISER
+// ===============================
+fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vSTkaem468jROXCpu4pfmlzfsRY5tpznOAmP-00X1ObYMNxcP6nWGrGUNFjK-OAZwuRlet72oVMWjZB/pub?gid=1804340378&single=true&output=csv
+")
+// 🔴 REPLACE WITH YOUR SECTION SHEET LINK
 .then(res => res.text())
 .then(data => {
 
   let rows = data.split("\n").slice(1);
 
   rows.forEach(row => {
+
     let cols = row.split(",");
 
     if (cols.length >= 3) {
       sections.push({
-        class: cols[0].trim(),
-        section: cols[1].trim(),
-        adviser: cols[2].trim()
+        class: cols[0].replace("\r","").trim(),
+        section: cols[1].replace("\r","").trim(),
+        adviser: cols[2].replace("\r","").trim()
       });
     }
+
   });
+
+  console.log("✅ Sections Loaded:", sections);
 
 });
 
 
-// =======================
-// ✅ LOAD STUDENTS
-// =======================
-fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vSTkaem468jROXCpu4pfmlzfsRY5tpznOAmP-00X1ObYMNxcP6nWGrGUNFjK-OAZwuRlet72oVMWjZB/pub?gid=0&single=true&output=csv")
-.then(res => res.text())
-.then(data => {
-
-  let rows = data.split("\n").slice(1);
-
-  rows.forEach(row => {
-    let cols = row.split(",");
-
-    if (cols.length >= 5) {
-      students.push({
-        class: cols[0].trim(),
-        section: cols[1].trim(),
-        lrn: cols[2].trim(),
-        name: cols[3].trim(),
-        gender: cols[4].trim()
-      });
-    }
-  });
-
-});
-
-
-// =======================
-// ✅ FILTER SECTION
-// =======================
+// ===============================
+// ✅ FILTER SECTION BASED ON CLASS
+// ===============================
 document.getElementById("class").addEventListener("change", function() {
 
   let selectedClass = this.value;
-  let sectionSelect = document.getElementById("section");
+  let sectionDropdown = document.getElementById("section");
 
-  sectionSelect.innerHTML = '<option>Select Section</option>';
+  sectionDropdown.innerHTML = '<option value="">Select Section</option>';
 
   sections.forEach(s => {
     if (s.class === selectedClass) {
       let opt = document.createElement("option");
       opt.value = s.section;
       opt.textContent = s.section;
-      sectionSelect.appendChild(opt);
+      sectionDropdown.appendChild(opt);
     }
   });
 
 });
 
 
-// =======================
-// ✅ DISPLAY STUDENTS + ADVISER
-// =======================
+// ===============================
+// ✅ AUTO SHOW ADVISER
+// ===============================
 document.getElementById("section").addEventListener("change", function() {
 
   let selectedClass = document.getElementById("class").value;
   let selectedSection = this.value;
 
-  let container = document.getElementById("students");
-  container.innerHTML = "";
-
-  // ✅ SET ADVISER
   let found = sections.find(s =>
-    s.class === selectedClass && s.section === selectedSection
+    s.class === selectedClass &&
+    s.section === selectedSection
   );
 
-  document.getElementById("adviser").innerText = found ? found.adviser : "";
-
-  // ✅ MALE / FEMALE
-  let maleHTML = `<div class="section-title">👨 Male</div>`;
-  let femaleHTML = `<div class="section-title">👩 Female</div>`;
-
-  let index = 0;
-
-  students.forEach(s => {
-
-    if (s.class === selectedClass && s.section === selectedSection) {
-
-      let row = `
-      <div class="row">
-        <span>${s.name}</span>
-        <span>
-          <input type="radio" name="s${index}" value="P" checked> P
-          <input type="radio" name="s${index}" value="A"> A
-          <input type="radio" name="s${index}" value="L"> L
-        </span>
-      </div>`;
-
-      if (s.gender === "Male") {
-        maleHTML += row;
-      } else {
-        femaleHTML += row;
-      }
-
-      index++;
-    }
-
-  });
-
-  container.innerHTML = maleHTML + femaleHTML;
+  document.getElementById("adviser").value = found ? found.adviser : "";
 
 });
 
 
-// =======================
-// ✅ SAVE ATTENDANCE
-// =======================
-function saveAttendance() {
+// ===============================
+// ✅ LIMIT LRN TO 12 DIGITS
+// ===============================
+document.getElementById("lrn").addEventListener("input", function() {
 
-  let selectedClass = document.getElementById("class").value;
-  let selectedSection = document.getElementById("section").value;
+  if (this.value.length > 12) {
+    this.value = this.value.slice(0, 12);
+  }
 
-  let rows = document.querySelectorAll(".row");
+});
 
-  let records = [];
 
-  rows.forEach((row, i) => {
+// ===============================
+// ✅ SAVE TO GOOGLE SHEETS
+// ===============================
+document.getElementById("studentForm").addEventListener("submit", function(e) {
 
-    let name = row.children[0].innerText;
-    let selected = document.querySelector(`input[name="s${i}"]:checked`);
+  e.preventDefault();
 
-    records.push({
-      class: selectedClass,
-      section: selectedSection,
-      name: name,
-      status: selected.value
-    });
+  let lrn = document.getElementById("lrn").value;
 
-  });
+  if (lrn.length !== 12) {
+    alert("❌ LRN must be exactly 12 digits");
+    return;
+  }
 
-  // ✅ SEND TO GOOGLE SHEETS
-  fetch("https://script.google.com/macros/s/AKfycbxf41h2kdkb4DIqW4iCmqtjxr58pllfyZza_9n2zU7I0ndPyUADGa5QD_MKNTUblXg6/exec
-", {
+  let student = {
+    class: document.getElementById("class").value,
+    section: document.getElementById("section").value,
+    lrn: lrn,
+    name: document.getElementById("name").value,
+    gender: document.getElementById("gender").value
+  };
+
+  fetch("https://script.google.com/macros/s/AKfycbxf41h2kdkb4DIqW4iCmqtjxr58pllfyZza_9n2zU7I0ndPyUADGa5QD_MKNTUblXg6/exec", {
     method: "POST",
-    body: JSON.stringify(records)
+    body: JSON.stringify(student)
   })
   .then(res => res.text())
   .then(data => {
-    document.getElementById("msg").innerText = "✅ Attendance Saved!";
+    document.getElementById("msg").innerText = "✅ Student saved!";
+    document.getElementById("studentForm").reset();
+    document.getElementById("adviser").value = "";
   })
   .catch(err => {
-    alert("❌ Error saving");
+    alert("❌ Failed to save");
+    console.error(err);
   });
 
-}
+});
 
 </script>
 
