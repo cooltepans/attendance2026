@@ -137,8 +137,13 @@ document.getElementById("class").addEventListener("change", function(){
   let selected = this.value;
   let sectionSelect = document.getElementById("section");
 
-  sectionSelect.innerHTML = '';
+  // ✅ CLEAR SECTION DROPDOWN
+  sectionSelect.innerHTML = '<option>Select Section</option>';
 
+  // ✅ CLEAR ADVISER (⚠️ IMPORTANT FIX)
+  document.getElementById("adviser").value = "";
+
+  // ✅ FILTER SECTIONS
   let filtered = sections.filter(s => s.class === selected);
 
   if (filtered.length === 0) {
@@ -154,7 +159,6 @@ document.getElementById("class").addEventListener("change", function(){
   });
 
 });
-
 
 // ✅ STEP 4: SECTION CHANGE
 document.getElementById("section").addEventListener("change", function(){
